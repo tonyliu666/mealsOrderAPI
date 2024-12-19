@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"weather/models/database"
+	"weather/models/gateway"
 
 	gin "github.com/gin-gonic/gin"
 )
@@ -32,7 +33,7 @@ func findTimeSlots(t string) string {
 	}
 	return "evening"
 }
-func assignValue(meal request, timeslots string) database.Diets {
+func assignValue(meal request, timeslots string, nutritions gateway.Nutrition) database.Diets {
 	var diet database.Diets
 	diet.Name = meal.Name
 	diet.Location = meal.Location
@@ -40,6 +41,12 @@ func assignValue(meal request, timeslots string) database.Diets {
 	diet.Time = meal.Time
 	diet.Periods = meal.Periods
 	diet.TimeSlots = timeslots
+	
+	diet.Ingredients.Carolie = nutritions.Carolie
+	diet.Ingredients.Protein = nutritions.Protein
+	diet.Ingredients.Fat = nutritions.Fat
+	diet.Ingredients.Carbohydrate = nutritions.Sugar
+	
 	return diet
 }
 
@@ -55,7 +62,8 @@ func RecordMeal(c *gin.Context) {
 	}
 	timeslots := findTimeSlots(meal.Time)
 	// get the nutrition analysis
-	diet := assignValue(meal, timeslots)
+	nutritions := gateway.GetNutritionAnalysis(meal.Name)
+	diet := assignValue(meal, timeslots, nutritions)
 
 	if err := diet.Save(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

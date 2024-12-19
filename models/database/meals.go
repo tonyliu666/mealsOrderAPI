@@ -11,11 +11,11 @@ import (
 var o orm.Ormer
 
 type Ingredients struct {
-	ID int `json:"id"`
-	Carolie int `json:"calorie"`
-	Protein int `json:"protein"`
-	Fat int `json:"fat"`
-	Carbohydrate int `json:"carbohydrate"`
+	ID int `json:"id" orm:"auto"`
+	Carolie float64 `json:"carolie"`
+	Protein float64 `json:"protein"`
+	Fat float64 `json:"fat"`
+	Carbohydrate float64 `json:"carbohydrate"`
 } 
 
 type Diets struct {

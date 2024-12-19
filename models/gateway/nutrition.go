@@ -10,11 +10,13 @@ import (
 	"os"
 )
 type Nutrition struct {
+	Carolie float64 `json:"carolie"`
 	Sugar float64 `json:"sugar"`
 	Protein float64 `json:"protein"`
 	Fat float64 `json:"fat"`
 }
-func getSugarAmount(totalNutrients map[string]interface{},kind string) float64 {
+
+func getNutrieAmount(totalNutrients map[string]interface{}, kind string) float64 {
 	// get the sugar nurtrient
 	kinds, ok := totalNutrients[kind].(map[string]interface{})
 	if !ok {
@@ -22,12 +24,21 @@ func getSugarAmount(totalNutrients map[string]interface{},kind string) float64 {
 	}
 	quantity := kinds["quantity"].(float64)
 	unit := kinds["unit"].(string)
-	if unit == "mg"{
+	if unit == "mg" {
 		quantity = quantity / 1000
-	}else if unit == "kg"{
+	} else if unit == "kg" {
 		quantity = quantity * 1000
 	}
 	return quantity
+}
+func getCarolieAmount(totalNutrients map[string]interface{}) float64 {
+	// get the sugar nurtrient
+	energy, ok := totalNutrients["ENERC_KCAL"].(map[string]interface{})
+	if !ok {
+		log.Fatal("Error: SUGAR is not a map")
+	}
+	quantity := energy["quantity"].(float64)
+	return quantity*1000
 }
 func unmarsalUtility(body []byte) map[string]interface{} {
 	var result map[string]interface{}
@@ -35,7 +46,7 @@ func unmarsalUtility(body []byte) map[string]interface{} {
 	if err != nil {
 		log.Fatalf("Error parsing JSON: %v", err)
 	}
-	// totalNutrients 
+	// totalNutrients
 	totalNutrients, ok := result["totalNutrients"].(map[string]interface{})
 	if !ok {
 		log.Fatal("Error: totalNutrients is not a map")
@@ -43,7 +54,7 @@ func unmarsalUtility(body []byte) map[string]interface{} {
 	return totalNutrients
 }
 
-func GetNutritionAnalysis(ingredient string) Nutrition{
+func GetNutritionAnalysis(ingredient string) Nutrition {
 	baseURL := "https://api.edamam.com/api/nutrition-data"
 	appID := os.Getenv("APPID")
 	appKey := os.Getenv("APPKEY")
@@ -71,15 +82,17 @@ func GetNutritionAnalysis(ingredient string) Nutrition{
 	}
 
 	// Parse the response body to json format
-	
+
 	totalNutrients := unmarsalUtility(body)
 
 	// Parse the JSON string into the map
-	sugarAmount := getSugarAmount(totalNutrients,"SUGAR")
-	proteinAmount := getSugarAmount(totalNutrients,"PROCNT")
-	fatAmount := getSugarAmount(totalNutrients,"FAT")
+	sugarAmount := getNutrieAmount(totalNutrients, "SUGAR")
+	proteinAmount := getNutrieAmount(totalNutrients, "PROCNT")
+	fatAmount := getNutrieAmount(totalNutrients, "FAT")
+	carolie := getCarolieAmount(totalNutrients)
 
 	nutrition := Nutrition{
+		Carolie: carolie,
 		Sugar: sugarAmount,
 		Protein: proteinAmount,
 		Fat: fatAmount,
