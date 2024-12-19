@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"weather/config"
 	router "weather/router"
 
 	"github.com/beego/beego/orm"
@@ -12,6 +13,10 @@ func init() {
 	err := orm.RunSyncdb("default", false, true)
 	if err != nil {
 		log.Fatalf("Error running syncdb: %v", err)
+	}
+	err = config.Init()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
 	}
 }
 

@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"net/http"
-	"weather/models"
+	"weather/models/database"
 
 	gin "github.com/gin-gonic/gin"
 )
@@ -32,8 +32,8 @@ func findTimeSlots(t string) string {
 	}
 	return "evening"
 }
-func assignValue(meal request, timeslots string) models.Diets {
-	var diet models.Diets
+func assignValue(meal request, timeslots string) database.Diets {
+	var diet database.Diets
 	diet.Name = meal.Name
 	diet.Location = meal.Location
 	diet.Date = meal.Date
@@ -54,7 +54,7 @@ func RecordMeal(c *gin.Context) {
 		return
 	}
 	timeslots := findTimeSlots(meal.Time)
-	// assign the values to the diet struct
+	// get the nutrition analysis
 	diet := assignValue(meal, timeslots)
 
 	if err := diet.Save(); err != nil {
@@ -64,12 +64,12 @@ func RecordMeal(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "meal recorded successfully"})
 }
-func Recommendation(c *gin.Context) ([]models.Diets, error) {
+func GetDiets(c *gin.Context) ([]database.Diets, error) {
 	// timeslots: morning, afternoon, evening
 	// periods: how long the meal will last
 	timeslots := c.Param("timeslot")
 	periods := c.Param("period")
-	diets, err := models.QueryDates(timeslots, periods)
+	diets, err := database.QueryDates(timeslots, periods)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return nil, err

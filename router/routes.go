@@ -39,7 +39,7 @@ func Init() *gin.Engine {
 	{
 		orders.GET("/:timeslot/:period", func(c *gin.Context) {
 			// search the meals that has been eaten in the morning with given period
-			diets,err :=handlers.Recommendation(c)
+			diets,err := handlers.GetDiets(c)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error": err.Error(),

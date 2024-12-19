@@ -1,4 +1,4 @@
-package models
+package database
 
 import (
 	"log"
@@ -10,6 +10,14 @@ import (
 
 var o orm.Ormer
 
+type Ingredients struct {
+	ID int `json:"id"`
+	Carolie int `json:"calorie"`
+	Protein int `json:"protein"`
+	Fat int `json:"fat"`
+	Carbohydrate int `json:"carbohydrate"`
+} 
+
 type Diets struct {
 	ID       int    `json:"id" orm:"auto"`
 	Name     string `json:"food_name"`
@@ -19,6 +27,8 @@ type Diets struct {
 	Time      string `json:"time_eaten"`
 	Periods   string `json:"periods"`
 	TimeSlots string `json:"time_slots"`
+	// foreign key
+	Ingredients *Ingredients `orm:"rel(fk)"`
 }
 
 func init() {
@@ -45,7 +55,6 @@ func QueryDates(timeslots string, period string) ([]Diets, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println(tmpResults)
 	// filter the results by the period, I need to find the meals prior to the current date within the period.
 	periodInt, err := strconv.Atoi(period)
 	if err != nil {
@@ -54,7 +63,6 @@ func QueryDates(timeslots string, period string) ([]Diets, error) {
 	now := time.Now()
 	//substract the period from the current date
 	prevDate := now.AddDate(0, 0, -periodInt)
-	log.Println(prevDate)
 
 	// filter the queries that are within the prevDate and now
 	for i, diet := range tmpResults {
