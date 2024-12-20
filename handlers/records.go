@@ -35,18 +35,33 @@ func findTimeSlots(t string) string {
 }
 func assignValue(meal request, timeslots string, nutritions gateway.Nutrition) database.Diets {
 	var diet database.Diets
-	diet.Name = meal.Name
-	diet.Location = meal.Location
-	diet.Date = meal.Date
-	diet.Time = meal.Time
-	diet.Periods = meal.Periods
-	diet.TimeSlots = timeslots
-	
-	diet.Ingredients.Carolie = nutritions.Carolie
-	diet.Ingredients.Protein = nutritions.Protein
-	diet.Ingredients.Fat = nutritions.Fat
-	diet.Ingredients.Carbohydrate = nutritions.Sugar
-	
+	// diet.Name = meal.Name
+	// diet.Location = meal.Location
+	// diet.Date = meal.Date
+	// diet.Time = meal.Time
+	// diet.Periods = meal.Periods
+	// diet.TimeSlots = timeslots
+	ingredients := &database.Ingredients{
+		Carolie:   nutritions.Carolie, 
+		Protein:  nutritions.Protein,
+		Fat:      nutritions.Fat,
+		Carbohydrate: nutritions.Sugar,
+	}
+	diet = database.Diets{
+		Name:     meal.Name,
+		Location: meal.Location,
+		Date:     meal.Date,
+		Time:     meal.Time,
+		Periods:  meal.Periods,
+		TimeSlots: timeslots,
+		Ingredients: ingredients,
+	}
+
+
+	// diet.Ingredients.Carolie = nutritions.Carolie
+	// diet.Ingredients.Protein = nutritions.Protein
+	// diet.Ingredients.Fat = nutritions.Fat
+	// diet.Ingredients.Carbohydrate = nutritions.Sugar
 	return diet
 }
 
@@ -66,6 +81,10 @@ func RecordMeal(c *gin.Context) {
 	diet := assignValue(meal, timeslots, nutritions)
 
 	if err := diet.Save(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if err := diet.Ingredients.Save(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

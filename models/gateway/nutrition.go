@@ -9,11 +9,12 @@ import (
 	"net/url"
 	"os"
 )
+
 type Nutrition struct {
 	Carolie float64 `json:"carolie"`
-	Sugar float64 `json:"sugar"`
+	Sugar   float64 `json:"sugar"`
 	Protein float64 `json:"protein"`
-	Fat float64 `json:"fat"`
+	Fat     float64 `json:"fat"`
 }
 
 func getNutrieAmount(totalNutrients map[string]interface{}, kind string) float64 {
@@ -38,8 +39,9 @@ func getCarolieAmount(totalNutrients map[string]interface{}) float64 {
 		log.Fatal("Error: SUGAR is not a map")
 	}
 	quantity := energy["quantity"].(float64)
-	return quantity*1000
+	return quantity * 1000
 }
+
 func unmarsalUtility(body []byte) map[string]interface{} {
 	var result map[string]interface{}
 	err := json.Unmarshal(body, &result)
@@ -57,7 +59,7 @@ func unmarsalUtility(body []byte) map[string]interface{} {
 func GetNutritionAnalysis(ingredient string) Nutrition {
 	baseURL := "https://api.edamam.com/api/nutrition-data"
 	appID := os.Getenv("APPID")
-	appKey := os.Getenv("APPKEY")
+	appKey := os.Getenv("APPKeys")
 	nutritionType := "cooking"
 
 	// Build the query parameters
@@ -85,6 +87,7 @@ func GetNutritionAnalysis(ingredient string) Nutrition {
 
 	totalNutrients := unmarsalUtility(body)
 
+	
 	// Parse the JSON string into the map
 	sugarAmount := getNutrieAmount(totalNutrients, "SUGAR")
 	proteinAmount := getNutrieAmount(totalNutrients, "PROCNT")
@@ -93,9 +96,10 @@ func GetNutritionAnalysis(ingredient string) Nutrition {
 
 	nutrition := Nutrition{
 		Carolie: carolie,
-		Sugar: sugarAmount,
+		Sugar:   sugarAmount,
 		Protein: proteinAmount,
-		Fat: fatAmount,
+		Fat:     fatAmount,
 	}
+	
 	return nutrition
 }
