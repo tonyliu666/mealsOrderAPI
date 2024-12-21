@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	err := orm.RunSyncdb("default", false, true)
+	err := orm.RunSyncdb("default", true, true)
 	if err != nil {
 		log.Fatalf("Error running syncdb: %v", err)
 	}

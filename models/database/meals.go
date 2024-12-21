@@ -11,12 +11,12 @@ import (
 var o orm.Ormer
 
 type Ingredients struct {
-	ID int `json:"id" orm:"auto"`
-	Carolie float64 `json:"carolie"`
-	Protein float64 `json:"protein"`
-	Fat float64 `json:"fat"`
+	ID           int     `json:"id" orm:"auto"`
+	Carolie      float64 `json:"carolie"`
+	Protein      float64 `json:"protein"`
+	Fat          float64 `json:"fat"`
 	Carbohydrate float64 `json:"carbohydrate"`
-} 
+}
 
 type Diets struct {
 	ID       int    `json:"id" orm:"auto"`
@@ -59,7 +59,8 @@ func QueryDates(timeslots string, period string) ([]Diets, error) {
 	var tmpResults []Diets
 	var diets []Diets
 	qs := o.QueryTable("diets")
-	_, err := qs.Filter("time_slots", timeslots).All(&tmpResults)
+	_, err := qs.Filter("time_slots", timeslots).RelatedSel().All(&tmpResults)
+
 	if err != nil {
 		return nil, err
 	}
@@ -73,10 +74,11 @@ func QueryDates(timeslots string, period string) ([]Diets, error) {
 	prevDate := now.AddDate(0, 0, -periodInt)
 
 	// filter the queries that are within the prevDate and now
-	for i, diet := range tmpResults {
+	for _, diet := range tmpResults {
 		if diet.Date >= prevDate.Format("2006-01-02") && diet.Date <= now.Format("2006-01-02") {
-			diets = append(diets, tmpResults[i])
+			diets = append(diets, diet)
 		}
 	}
+
 	return diets, nil
 }
