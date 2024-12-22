@@ -31,18 +31,19 @@ func Init() *gin.Engine {
 	}
 	orders := router.Group("/orders")
 	{
-		orders.GET("/healthy/:timeslot", func(c *gin.Context) {
+		orders.GET("/healthy/:timeslot/:periods", func(c *gin.Context) {
 			// get the recommendation for the given timeslot
-			recommendation,err := handlers.GetDiets(c)
+			diets,err := handlers.GetDiets(c)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error": err.Error(),
 				})
 				return
 			}
-			c.JSON(http.StatusOK, recommendation)
+			err = handlers.Recommendation(diets)
+			c.JSON(http.StatusOK, diets)
 		})
-		orders.GET("/enjoyable/:timeslot", func(c *gin.Context) {
+		orders.GET("/enjoyable/:timeslot/:periods", func(c *gin.Context) {
 			// get the recommendation for the given timeslot
 			recommendation,err := handlers.GetDiets(c)
 			if err != nil {

@@ -1,65 +1,54 @@
 package main
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
-	"net/url"
+	"os"
+
+	"github.com/google/generative-ai-go/genai"
+	"github.com/joho/godotenv"
+	"google.golang.org/api/option"
 )
 
+func Init() error {
+	// read the environment variables from the .env file
+	err := godotenv.Load()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func main() {
-	baseURL := "https://api.edamam.com/api/nutrition-data"
-	appID := "f6558e99"
-	appKey := "78da3304835443dd714322492c7f62fe"
-	nutritionType := "cooking"
-	ingredient := "5 orz beef"
-
-	// Build the query parameters
-	params := url.Values{}
-	params.Add("app_id", appID)
-	params.Add("app_key", appKey)
-	params.Add("nutrition-type", nutritionType)
-	params.Add("ingr", ingredient)
-	fullURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
-
-	// Send the GET request
-	response, err := http.Get(fullURL)
+	err := Init()
 	if err != nil {
-		log.Fatalf("Failed to send GET request: %v", err)
+		log.Fatalf("Error loading .env file: %v", err)
 	}
-	defer response.Body.Close()
-
-	// Read the response body
-	body, err := io.ReadAll(response.Body)
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, option.WithAPIKey(os.Getenv("GEMINI_API_KEY")))
 	if err != nil {
-		log.Fatalf("Failed to read response body: %v", err)
+		log.Fatal(err)
 	}
-	var result map[string]interface{}
+	defer client.Close()
 
-	// Parse the JSON string into the map
-	err = json.Unmarshal([]byte(body), &result)
+	model := client.GenerativeModel("gemini-1.5-flash")
+	resp, err := model.GenerateContent(ctx, genai.Text("where should I order the food with abundant Carbonhyrate for breakfast which is nearby HsinChu TsinHua University. Please give me five spots to buy the breakfast."))
 	if err != nil {
-		log.Fatalf("Error parsing JSON: %v", err)
-	}
-	
-	totalNutrients, ok := result["totalNutrients"].(map[string]interface{})
-	if !ok {
-		log.Fatal("Error: totalNutrients is not a map")
+		log.Fatal(err)
 	}
 
-	// Access the SUGAR field
-	sugar, ok := totalNutrients["SUGAR"].(map[string]interface{})
-	if !ok {
-		log.Fatal("Error: SUGAR is not a map")
-	}
-	label := sugar["label"].(string)
-	quantity := sugar["quantity"].(float64)
-	unit := sugar["unit"].(string)
+	printResponse(resp)
 
-	// Print the values
-	fmt.Println("Label:", label)
-	fmt.Println("Quantity:", quantity)
-	fmt.Println("Unit:", unit)
+}
+
+func printResponse(resp *genai.GenerateContentResponse) {
+	for _, cand := range resp.Candidates {
+		if cand.Content != nil {
+			for _, part := range cand.Content.Parts {
+				fmt.Println(part)
+			}
+		}
+	}
+	fmt.Println("---")
 }
