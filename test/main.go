@@ -33,7 +33,7 @@ func main() {
 	defer client.Close()
 
 	model := client.GenerativeModel("gemini-1.5-flash")
-	resp, err := model.GenerateContent(ctx, genai.Text("where should I order the food with abundant Carbonhyrate for breakfast which is nearby HsinChu TsinHua University. Please give me five spots to buy the breakfast."))
+	resp, err := model.GenerateContent(ctx, genai.Text("Please give me more five Carbonhydrate abundant foods especially for breakfast"))
 	if err != nil {
 		log.Fatal(err)
 	}
