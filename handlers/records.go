@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"weather/models/database"
 	"weather/models/gateway"
@@ -84,6 +85,7 @@ func GetDiets(c *gin.Context) ([]database.Diets, error) {
 	var diets []database.Diets
 	timeslots := c.Param("timeslot")
 	periods := c.Param("periods")
+	log.Println(timeslots, periods)
 	diets, err := database.QueryDates(timeslots, periods)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

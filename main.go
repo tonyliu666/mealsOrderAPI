@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"weather/config"
+	"weather/models/gateway"
 	router "weather/router"
 
 	"github.com/beego/beego/orm"
@@ -17,6 +18,10 @@ func init() {
 	err = config.Init()
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
+	}
+	err = gateway.Init()
+	if err != nil {
+		log.Fatalf("Error initializing gateway: %v", err)
 	}
 }
 

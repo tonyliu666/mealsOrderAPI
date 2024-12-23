@@ -19,9 +19,10 @@ type Nutrition struct {
 
 func getNutrieAmount(totalNutrients map[string]interface{}, kind string) float64 {
 	// get the sugar nurtrient
+	log.Println(totalNutrients)
 	kinds, ok := totalNutrients[kind].(map[string]interface{})
 	if !ok {
-		log.Fatal("Error: SUGAR is not a map")
+		log.Fatal("Error: KINDS is not a map")
 	}
 	quantity := kinds["quantity"].(float64)
 	unit := kinds["unit"].(string)
@@ -48,6 +49,7 @@ func unmarsalUtility(body []byte) map[string]interface{} {
 	if err != nil {
 		log.Fatalf("Error parsing JSON: %v", err)
 	}
+	log.Println(result)
 	// totalNutrients
 	totalNutrients, ok := result["totalNutrients"].(map[string]interface{})
 	if !ok {

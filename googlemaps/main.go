@@ -209,7 +209,7 @@ func parsePlaceType(placeType string, r *maps.NearbySearchRequest) {
 
 // 	resp, err := client.Geocode(context.Background(), r)
 // 	check(err)
-
+// 	log.Println(resp[0].Geometry.Location)
 // 	pretty.Println(resp)
 // }
 
