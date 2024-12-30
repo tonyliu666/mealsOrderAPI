@@ -49,7 +49,6 @@ func unmarsalUtility(body []byte) map[string]interface{} {
 	if err != nil {
 		log.Fatalf("Error parsing JSON: %v", err)
 	}
-	log.Println(result)
 	// totalNutrients
 	totalNutrients, ok := result["totalNutrients"].(map[string]interface{})
 	if !ok {

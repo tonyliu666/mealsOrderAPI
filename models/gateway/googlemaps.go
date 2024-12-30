@@ -2,17 +2,10 @@ package gateway
 
 import (
 	"context"
-	"log"
 	"os"
 
 	"googlemaps.github.io/maps"
 )
-
-func check(err error) {
-	if err != nil {
-		log.Fatalf("fatal error: %s", err)
-	}
-}
 
 var googleMapsClient *maps.Client
 
@@ -43,14 +36,13 @@ func GetCurrentLocation(address string) ([]maps.LatLng, error) {
 	return locationCollection, nil
 }
 
-func NearbySearch(radius uint, location maps.LatLng, keyword []string) ([]maps.PlacesSearchResponse, error) {
-	var resp []maps.PlacesSearchResponse
-	log.Println("keyword", keyword[0], radius, location)
+func NearbySearch(location maps.LatLng, keyword []string) ([]map[string]interface{}, error) {
+	var resp []map[string]interface{}
+
 	for _, key := range keyword {
 		r := &maps.NearbySearchRequest{
-			Radius:  radius,
 			Keyword: key,
-			OpenNow: false,
+			// OpenNow: false,
 		}
 
 		r.RankBy = maps.RankByDistance
@@ -60,9 +52,24 @@ func NearbySearch(radius uint, location maps.LatLng, keyword []string) ([]maps.P
 		if err != nil {
 			return nil, err
 		}
-		log.Println("result", rsp, "for", key)
-		resp = append(resp, rsp)
+		information := extractInfo(rsp)
+		resp = append(resp, information...)
 
 	}
+
 	return resp, nil
+}
+
+func extractInfo(response maps.PlacesSearchResponse) []map[string]interface{} {
+	var extracted []map[string]interface{}
+
+	for _, result := range response.Results {
+		info := map[string]interface{}{
+			"Location": result.Geometry.Location,
+			"Name":     result.Name,
+			"Rating":   result.Rating,
+		}
+		extracted = append(extracted, info)
+	}
+	return extracted
 }

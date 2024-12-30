@@ -1,7 +1,6 @@
 package router
 
 import (
-	"log"
 	"net/http"
 	"weather/handlers"
 
@@ -61,7 +60,7 @@ func Init() *gin.Engine {
 	}
 	promotions := router.Group("/shop")
 	{
-		promotions.GET("/healthy/:location/:radius/:timeslot/:periods", func(c *gin.Context) {
+		promotions.GET("/healthy/:location/:timeslot/:periods", func(c *gin.Context) {
 			diets, err := handlers.GetDiets(c)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
@@ -71,9 +70,20 @@ func Init() *gin.Engine {
 			}
 			// meals I want to eat in a heakthy way
 			meals, err := handlers.Recommendation(diets)
-			log.Println(meals)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
 
 			shops, err := handlers.GetShops(c, meals)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
 			c.JSON(http.StatusOK, shops)
 		})
 	}

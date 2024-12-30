@@ -2,42 +2,51 @@ package handlers
 
 import (
 	"log"
-	"strconv"
 	"weather/models/gateway"
 
 	gin "github.com/gin-gonic/gin"
-	"github.com/kr/pretty"
 	"googlemaps.github.io/maps"
 )
 
-func shopsRecommendation(c *gin.Context, loction []maps.LatLng, meals []string) (string, error) {
-	// get the shops for the given meals
-	radiusStr := c.Param("radius")
-	radius, err := strconv.ParseUint(radiusStr, 10, 32)
-	if err != nil {
-		return "", err
-	}
-	radiusParam := uint(radius)
-	latlng := loction[0]
-
-	result, err := gateway.NearbySearch(radiusParam, latlng, meals)
-	log.Println("result", result)
-	if err != nil {
-		return "", err
-	}
-	return pretty.Sprintf("%# v", result), nil
+type Shop struct {
+	Name     string      `json:"name"`
+	Location maps.LatLng `json:"location"`
+	Rating   float32     `json:"rating"`
 }
 
-func GetShops(c *gin.Context, meals []string) (string, error) {
+func shopsRecommendation(loction []maps.LatLng, meals []string) ([]Shop, error) {
+	// get the shops for the given meals
+	var shops []Shop
+	latlng := loction[0]
+	result, err := gateway.NearbySearch(latlng, meals)
+
+	if err != nil {
+		return nil, err
+	}
+	// each element in the result is a map
+	// I want to return a json string with the key same as the struct Name field and rest of the fields as the value
+	log.Println(result)
+	for _, r := range result {
+		shop := Shop{
+			Name:     r["Name"].(string),
+			Location: r["Location"].(maps.LatLng),
+			Rating:   r["Rating"].(float32),
+		}
+		shops = append(shops, shop)
+	}
+	return shops, nil
+}
+
+func GetShops(c *gin.Context, meals []string) ([]Shop, error) {
 	// get the shops for the given meals
 	location := c.Param("location")
 	longlatude, err := gateway.GetCurrentLocation(location)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	shops, err := shopsRecommendation(c, longlatude, meals)
+	shops, err := shopsRecommendation(longlatude, meals)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	return shops, nil
 }
