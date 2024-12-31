@@ -40,11 +40,17 @@ func Init() *gin.Engine {
 				})
 				return
 			}
-			// meals I want to eat in a heakthy way
+			
 			meals, err := handlers.Recommendation(diets)
-
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
 			c.JSON(http.StatusOK, meals)
 		})
+		// TODO: not yet started
 		orders.GET("/enjoyable/:timeslot/:periods", func(c *gin.Context) {
 			// get the recommendation for the given timeslot
 			recommendation, err := handlers.GetDiets(c)
@@ -87,6 +93,19 @@ func Init() *gin.Engine {
 			c.JSON(http.StatusOK, shops)
 		})
 	}
+	// Public routes (do not require authentication)
+    publicRoutes := router.Group("/public")
+    {
+        publicRoutes.POST("/login", handlers.Login)
+        publicRoutes.POST("/register", handlers.Register)
+    }
+
+    // // Protected routes (require authentication)
+    // protectedRoutes := router.Group("/protected")
+    // protectedRoutes.Use(middleware.AuthenticationMiddleware())
+    // {
+    //     // Protected routes here
+    // }
 
 	return router
 }

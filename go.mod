@@ -4,6 +4,7 @@ go 1.23.2
 
 require (
 	github.com/beego/beego v1.12.14
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.10.0
 	github.com/google/generative-ai-go v0.19.0
 	github.com/joho/godotenv v1.5.1

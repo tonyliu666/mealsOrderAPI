@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"weather/models/gateway"
 
 	gin "github.com/gin-gonic/gin"
@@ -25,7 +24,7 @@ func shopsRecommendation(loction []maps.LatLng, meals []string) ([]Shop, error) 
 	}
 	// each element in the result is a map
 	// I want to return a json string with the key same as the struct Name field and rest of the fields as the value
-	log.Println(result)
+
 	for _, r := range result {
 		shop := Shop{
 			Name:     r["Name"].(string),
