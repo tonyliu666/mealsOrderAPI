@@ -17,12 +17,11 @@ type Nutrition struct {
 	Fat     float64 `json:"fat"`
 }
 
-func getNutrieAmount(totalNutrients map[string]interface{}, kind string) float64 {
+func getNutrieAmount(totalNutrients map[string]interface{}, kind string) (float64, error) {
 	// get the sugar nurtrient
-	log.Println(totalNutrients)
 	kinds, ok := totalNutrients[kind].(map[string]interface{})
 	if !ok {
-		log.Fatal("Error: KINDS is not a map")
+		return 0.0, fmt.Errorf("please enter a valid unit of your food or give concrete information")
 	}
 	quantity := kinds["quantity"].(float64)
 	unit := kinds["unit"].(string)
@@ -31,16 +30,16 @@ func getNutrieAmount(totalNutrients map[string]interface{}, kind string) float64
 	} else if unit == "kg" {
 		quantity = quantity * 1000
 	}
-	return quantity
+	return quantity, nil
 }
-func getCarolieAmount(totalNutrients map[string]interface{}) float64 {
+func getCarolieAmount(totalNutrients map[string]interface{}) (float64, error) {
 	// get the sugar nurtrient
 	energy, ok := totalNutrients["ENERC_KCAL"].(map[string]interface{})
 	if !ok {
-		log.Fatal("Error: SUGAR is not a map")
+		return 0.0, fmt.Errorf("cannot count the total calories")
 	}
 	quantity := energy["quantity"].(float64)
-	return quantity * 1000
+	return quantity * 1000, nil
 }
 
 func unmarsalUtility(body []byte) map[string]interface{} {
@@ -57,7 +56,7 @@ func unmarsalUtility(body []byte) map[string]interface{} {
 	return totalNutrients
 }
 
-func GetNutritionAnalysis(ingredient string) Nutrition {
+func GetNutritionAnalysis(ingredient string) (Nutrition, error) {
 	baseURL := "https://api.edamam.com/api/nutrition-data"
 	appID := os.Getenv("APPID")
 	appKey := os.Getenv("APPKeys")
@@ -74,26 +73,36 @@ func GetNutritionAnalysis(ingredient string) Nutrition {
 	// Send the GET request
 	response, err := http.Get(fullURL)
 	if err != nil {
-		log.Fatalf("Failed to send GET request: %v", err)
+		return Nutrition{}, fmt.Errorf("failed to send GET request: %v", err)
 	}
 	defer response.Body.Close()
 
 	// Read the response body
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
-		log.Fatalf("Failed to read response body: %v", err)
+		return Nutrition{}, fmt.Errorf("failed to read response body: %v", err)
 	}
 
 	// Parse the response body to json format
-
 	totalNutrients := unmarsalUtility(body)
 
-	
 	// Parse the JSON string into the map
-	sugarAmount := getNutrieAmount(totalNutrients, "SUGAR")
-	proteinAmount := getNutrieAmount(totalNutrients, "PROCNT")
-	fatAmount := getNutrieAmount(totalNutrients, "FAT")
-	carolie := getCarolieAmount(totalNutrients)
+	sugarAmount, err := getNutrieAmount(totalNutrients, "SUGAR")
+	if err != nil {
+		return Nutrition{}, err
+	}
+	proteinAmount, err := getNutrieAmount(totalNutrients, "PROCNT")
+	if err != nil {
+		return Nutrition{}, err
+	}
+	fatAmount, err := getNutrieAmount(totalNutrients, "FAT")
+	if err != nil {
+		return Nutrition{}, err
+	}
+	carolie, err := getCarolieAmount(totalNutrients)
+	if err != nil {
+		return Nutrition{}, err
+	}
 
 	nutrition := Nutrition{
 		Carolie: carolie,
@@ -101,6 +110,6 @@ func GetNutritionAnalysis(ingredient string) Nutrition {
 		Protein: proteinAmount,
 		Fat:     fatAmount,
 	}
-	
-	return nutrition
+
+	return nutrition, nil
 }

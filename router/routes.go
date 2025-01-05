@@ -28,6 +28,7 @@ func Init() *gin.Engine {
 		diets.POST("/meals", func(c *gin.Context) {
 			handlers.RecordMeal(c)
 		})
+		
 	}
 	orders := router.Group("/orders")
 	{
@@ -93,7 +94,7 @@ func Init() *gin.Engine {
 			c.JSON(http.StatusOK, shops)
 		})
 	}
-	// Public routes (do not require authentication)
+	
     publicRoutes := router.Group("/public")
     {
         publicRoutes.POST("/login", handlers.Login)

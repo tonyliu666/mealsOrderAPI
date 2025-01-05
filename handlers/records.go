@@ -33,24 +33,25 @@ func findTimeSlots(t string) string {
 	}
 	return "evening"
 }
-func assignValue(meal request, timeslots string, nutritions gateway.Nutrition) database.Diets {
-	var diet database.Diets
-	ingredients := &database.Ingredients{
-		Carolie:      nutritions.Carolie,
-		Protein:      nutritions.Protein,
-		Fat:          nutritions.Fat,
-		Carbohydrate: nutritions.Sugar,
-	}
-	diet = database.Diets{
-		Name:        meal.Name,
-		Location:    meal.Location,
-		Date:        meal.Date,
-		Time:        meal.Time,
-		Periods:     meal.Periods,
-		TimeSlots:   timeslots,
-		Ingredients: ingredients,
-	}
-	return diet
+func assignValue(meal request, timeslots string, nutritions gateway.Nutrition) (database.DBManager, error) {
+	meals := database.NewDBManager("ingredients")
+	ingredient, _ := meals.(*database.Ingredients)
+	ingredient.Carolie = nutritions.Carolie
+	ingredient.Protein = nutritions.Protein
+	ingredient.Fat = nutritions.Fat
+	ingredient.Carbohydrate = nutritions.Sugar
+
+	diets := database.NewDBManager("diets")
+	diet, _ := diets.(*database.Diets)
+	diet.Name = meal.Name
+	diet.Location = meal.Location
+	diet.Date = meal.Date
+	diet.Time = meal.Time
+	diet.Periods = meal.Periods
+	diet.TimeSlots = timeslots
+	diet.Ingredients = ingredient
+
+	return diets, nil
 }
 
 func RecordMeal(c *gin.Context) {
@@ -65,13 +66,19 @@ func RecordMeal(c *gin.Context) {
 	}
 	timeslots := findTimeSlots(meal.Time)
 	// get the nutrition analysis
-	nutritions := gateway.GetNutritionAnalysis(meal.Name)
-	diet := assignValue(meal, timeslots, nutritions)
-	if err := diet.Ingredients.Save(); err != nil {
+	nutritions, err := gateway.GetNutritionAnalysis(meal.Name)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if err := diet.Save(); err != nil {
+	diet, err := assignValue(meal, timeslots, nutritions)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = diet.Save()
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

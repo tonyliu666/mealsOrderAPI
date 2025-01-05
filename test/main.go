@@ -47,17 +47,6 @@ func main() {
 	}
 }
 
-// func printResponse(resp *genai.GenerateContentResponse) {
-// 	for _, cand := range resp.Candidates {
-// 		if cand.Content != nil {
-// 			for _, part := range cand.Content.Parts {
-// 				fmt.Println(part)
-// 			}
-// 		}
-// 	}
-// 	fmt.Println("---")
-// }
-
 func extractMealNames(resp *genai.GenerateContentResponse) []string {
 	var meals []string
 	for _, cand := range resp.Candidates {

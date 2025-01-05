@@ -32,7 +32,7 @@ type Diets struct {
 }
 
 func init() {
-	orm.RegisterModel(new(Diets), new(Ingredients))
+	orm.RegisterModel(new(Diets), new(Ingredients), new(Client))
 	orm.RegisterDriver("postgres", orm.DRPostgres)
 	orm.RegisterDataBase("default", "postgres", "user=tony password=t870101 dbname=diets sslmode=disable")
 	log.Println("Database connection established")
@@ -48,8 +48,15 @@ func (f *Ingredients) Read() error {
 }
 
 func (f *Diets) Save() error {
-	_, err := o.Insert(f)
-	return err
+	_,err := o.Insert(f.Ingredients)
+	if err != nil {
+		return err 
+	}
+	_, err = o.Insert(f)
+	if err != nil {
+		return err 
+	}
+	return nil 
 }
 func (f *Diets) Read() error {
 	err := o.Read(f)
