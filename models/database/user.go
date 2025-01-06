@@ -11,6 +11,6 @@ func (f *Client) Save() error {
 	return err
 }
 func (f *Client) Read() error {
-	err := o.Read(f)
+	err := o.Read(f , "username")
 	return err
 }

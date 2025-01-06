@@ -18,20 +18,20 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data"})
 		return
 	}
+	// deep copy the user
+	realuser := user
+	err := realuser.Read()
 
-	// Check if credentials are valid (replace this logic with real authentication)
-	if user.Username == "user" && user.Password == "password" {
-		// Generate a JWT token
-		token, err := utils.GenerateToken(user.ID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error generating token"})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"token": token})
-	} else {
+	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
 	}
+	if !utils.VerifyPassword(user.Password, realuser.Password) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
+
 }
 
 // Function for registering a new user (for demonstration purposes)
