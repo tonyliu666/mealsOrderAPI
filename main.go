@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"weather/config"
+	"weather/models/cache"
 	"weather/models/gateway"
 	router "weather/router"
 
@@ -22,6 +23,10 @@ func init() {
 	err = gateway.Init()
 	if err != nil {
 		log.Fatalf("Error initializing gateway: %v", err)
+	}
+	err = cache.Init()
+	if err != nil {
+		log.Fatalf("Error initializing redis cache: %v", err)
 	}
 }
 

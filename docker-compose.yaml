@@ -1,11 +1,24 @@
-# docker use ollama, command: docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
-version: '3.7'
-
 services:
-  ollama:
-    image: ollama/ollama
-    container_name: ollama
+  postgres:
+    image: postgres:12
+    container_name: postgres
+    # disable ssl mode
+    environment:
+      POSTGRES_USER: tony
+      POSTGRES_PASSWORD: t870101
+      POSTGRES_DB: diets
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - "11434:11434"
+      - "5433:5432"
     volumes:
-      - ollama:/root/.ollama
+      - postgres:/var/lib/postgresql/data
+  redis:
+    image: redis
+    container_name: redis_container
+    ports:
+      - "6380:6379"
+    volumes:
+      - ./data:/data
+    command: redis-server --appendonly yes
+volumes:
+  postgres:

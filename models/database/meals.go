@@ -34,7 +34,7 @@ type Diets struct {
 func init() {
 	orm.RegisterModel(new(Diets), new(Ingredients), new(Client))
 	orm.RegisterDriver("postgres", orm.DRPostgres)
-	orm.RegisterDataBase("default", "postgres", "user=tony password=t870101 dbname=diets sslmode=disable")
+	orm.RegisterDataBase("default", "postgres", "user=tony password=t870101 port=5433 dbname=diets sslmode=disable")
 	log.Println("Database connection established")
 	o = orm.NewOrm()
 }

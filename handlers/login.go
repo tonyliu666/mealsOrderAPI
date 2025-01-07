@@ -20,6 +20,7 @@ func Login(c *gin.Context) {
 	}
 	// deep copy the user
 	realuser := user
+	// check the user name exists in redis cache
 	err := realuser.Read()
 
 	if err != nil {
