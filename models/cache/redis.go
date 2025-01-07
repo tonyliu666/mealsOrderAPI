@@ -24,3 +24,19 @@ func Init() error {
 	log.Printf("Connected to Redis: %s\n", pong)
 	return nil
 }
+func Save(key string, value string) error {
+	ctx := context.Background()
+	err := rdb.Set(ctx, key, value, 0).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func Get(key string) (string, error) {
+	ctx := context.Background()
+	val, err := rdb.Get(ctx, key).Result()
+	if err != nil {
+		return "", err
+	}
+	return val, nil
+}

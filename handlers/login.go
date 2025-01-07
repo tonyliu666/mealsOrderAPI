@@ -3,16 +3,17 @@ package handlers
 import (
 	"math/rand/v2"
 	"net/http"
+	"weather/models/cache"
 	"weather/models/database"
 	"weather/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // Function for logging in
 func Login(c *gin.Context) {
 	var user database.Client
-
 	// Check user credentials and generate a JWT token
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data"})
@@ -20,8 +21,16 @@ func Login(c *gin.Context) {
 	}
 	// deep copy the user
 	realuser := user
+	// check the request with session id exists in redis cache
+	sessionID := c.GetHeader("Authorization")
+	_, err := cache.Get(sessionID)
+	if err == nil {
+		c.JSON(http.StatusOK, gin.H{"message": "User already logged in"})
+		return
+	}
+
 	// check the user name exists in redis cache
-	err := realuser.Read()
+	err = realuser.Read()
 
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
@@ -31,7 +40,15 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
+	// return a session id(unsigned int) to the user
+	NewSessionID := uuid.New().String()
+	// save the session id to the redis cache
+	err = cache.Save(NewSessionID, realuser.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error saving session"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully", "sessionID": NewSessionID})
 
 }
 
