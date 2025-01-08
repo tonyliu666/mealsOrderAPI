@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 	"os"
+	"sync"
 
 	"googlemaps.github.io/maps"
 )
@@ -23,7 +24,7 @@ func GetCurrentLocation(address string) ([]maps.LatLng, error) {
 	r := &maps.GeocodingRequest{
 		Address: address,
 	}
-
+	//call the google maps api
 	resp, err := googleMapsClient.Geocode(context.Background(), r)
 	if err != nil {
 		return nil, err
@@ -39,25 +40,40 @@ func GetCurrentLocation(address string) ([]maps.LatLng, error) {
 func NearbySearch(location maps.LatLng, keyword []string) ([]map[string]interface{}, error) {
 	var resp []map[string]interface{}
 
+	// create the number of goroutines equal to the number of keywords
+	// create wait group
+	var wg sync.WaitGroup
+	wg.Add(len(keyword))
+	errChan := make(chan error, len(keyword))
+
 	for _, key := range keyword {
-		r := &maps.NearbySearchRequest{
-			Keyword: key,
-			// OpenNow: false,
-		}
+		go func() {
+			r := &maps.NearbySearchRequest{
+				Keyword: key,
+				// OpenNow: false,
+			}
 
-		r.RankBy = maps.RankByDistance
-		r.Location = &location
+			r.RankBy = maps.RankByDistance
+			r.Location = &location
 
-		rsp, err := googleMapsClient.NearbySearch(context.Background(), r)
-		if err != nil {
-			return nil, err
-		}
-		information := extractInfo(rsp)
-		resp = append(resp, information...)
-
+			rsp, err := googleMapsClient.NearbySearch(context.Background(), r)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			information := extractInfo(rsp)
+			resp = append(resp, information...)
+			wg.Done()
+		}()
 	}
-
-	return resp, nil
+	wg.Wait()
+	// check if there is any error
+	select {
+		case err := <-errChan:
+			return nil, err
+		default:
+			return resp, nil
+	}
 }
 
 func extractInfo(response maps.PlacesSearchResponse) []map[string]interface{} {

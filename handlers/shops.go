@@ -3,7 +3,6 @@ package handlers
 import (
 	"weather/models/gateway"
 
-	gin "github.com/gin-gonic/gin"
 	"googlemaps.github.io/maps"
 )
 
@@ -36,13 +35,8 @@ func shopsRecommendation(loction []maps.LatLng, meals []string) ([]Shop, error) 
 	return shops, nil
 }
 
-func GetShops(c *gin.Context, meals []string) ([]Shop, error) {
+func GetShops(meals []string, longlatude []maps.LatLng) ([]Shop, error) {
 	// get the shops for the given meals
-	location := c.Param("location")
-	longlatude, err := gateway.GetCurrentLocation(location)
-	if err != nil {
-		return nil, err
-	}
 	shops, err := shopsRecommendation(longlatude, meals)
 	if err != nil {
 		return nil, err

@@ -27,7 +27,7 @@ func Init() error {
 }
 func Save(key string, value string) error {
 	ctx := context.Background()
-	err := rdb.Set(ctx, key, value, 5*time.Minute).Err()
+	err := rdb.Set(ctx, key, value, 10*time.Minute).Err()
 	if err != nil {
 		return err
 	}
