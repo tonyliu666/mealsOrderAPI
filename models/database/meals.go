@@ -2,13 +2,16 @@ package database
 
 import (
 	"log"
+	"os"
 	"strconv"
 	"time"
 
 	"github.com/beego/beego/orm"
+	"github.com/joho/godotenv"
 )
 
 var o orm.Ormer
+var connectionInfo string
 
 type Ingredients struct {
 	ID           int     `json:"id" orm:"auto"`
@@ -32,9 +35,16 @@ type Diets struct {
 }
 
 func init() {
+	// read the connection information
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+	connectionInfo = "user=" + os.Getenv("DBuser") + " password=" + os.Getenv("DBpassword") + " port=" + os.Getenv("DBport") + " dbname=" + os.Getenv("DBname") + " sslmode=" + os.Getenv("DBmode")
+	log.Println("Database connection info: ", connectionInfo)
 	orm.RegisterModel(new(Diets), new(Ingredients), new(Client))
 	orm.RegisterDriver("postgres", orm.DRPostgres)
-	orm.RegisterDataBase("default", "postgres", "user=tony password=t870101 port=5433 dbname=diets sslmode=disable")
+	orm.RegisterDataBase("default", "postgres", connectionInfo)
 	log.Println("Database connection established")
 	o = orm.NewOrm()
 }
@@ -48,15 +58,15 @@ func (f *Ingredients) Read() error {
 }
 
 func (f *Diets) Save() error {
-	_,err := o.Insert(f.Ingredients)
+	_, err := o.Insert(f.Ingredients)
 	if err != nil {
-		return err 
+		return err
 	}
 	_, err = o.Insert(f)
 	if err != nil {
-		return err 
+		return err
 	}
-	return nil 
+	return nil
 }
 func (f *Diets) Read() error {
 	err := o.Read(f)

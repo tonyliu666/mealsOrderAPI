@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"log"
+	"time"
 
 	redis "github.com/go-redis/redis/v8"
 )
@@ -26,7 +27,7 @@ func Init() error {
 }
 func Save(key string, value string) error {
 	ctx := context.Background()
-	err := rdb.Set(ctx, key, value, 0).Err()
+	err := rdb.Set(ctx, key, value, 5*time.Minute).Err()
 	if err != nil {
 		return err
 	}

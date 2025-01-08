@@ -2,12 +2,12 @@ package main
 
 import (
 	"log"
-	"weather/config"
 	"weather/models/cache"
 	"weather/models/gateway"
 	router "weather/router"
 
 	"github.com/beego/beego/orm"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
@@ -16,10 +16,11 @@ func init() {
 	if err != nil {
 		log.Fatalf("Error running syncdb: %v", err)
 	}
-	err = config.Init()
+	err = godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
+
 	err = gateway.Init()
 	if err != nil {
 		log.Fatalf("Error initializing gateway: %v", err)
@@ -28,6 +29,7 @@ func init() {
 	if err != nil {
 		log.Fatalf("Error initializing redis cache: %v", err)
 	}
+
 }
 
 func main() {
