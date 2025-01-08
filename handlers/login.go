@@ -3,6 +3,7 @@ package handlers
 import (
 	"math/rand/v2"
 	"net/http"
+	"time"
 	"weather/models/cache"
 	"weather/models/database"
 	"weather/utils"
@@ -43,7 +44,7 @@ func Login(c *gin.Context) {
 	// return a session id(unsigned int) to the user
 	NewSessionID := uuid.New().String()
 	// save the session id to the redis cache
-	err = cache.Save(NewSessionID, realuser.Username)
+	err = cache.Save(NewSessionID, realuser.Username, 10*time.Minute)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error saving session"})
 		return

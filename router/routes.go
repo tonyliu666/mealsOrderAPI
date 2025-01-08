@@ -3,7 +3,9 @@ package router
 import (
 	"net/http"
 	"sync"
+	"time"
 	"weather/handlers"
+	"weather/models/cache"
 	"weather/models/gateway"
 
 	"github.com/gin-gonic/gin"
@@ -19,14 +21,16 @@ func Init() *gin.Engine {
 	{
 		diets.GET("/:timeslot/:periods", func(c *gin.Context) {
 			// search the meals that has been eaten in the morning with given period
-			diets, err := handlers.GetDiets(c)
+			timeslots := c.Param("timeslot")
+			periods := c.Param("periods")
+			meals, err := handlers.GetDiets(timeslots, periods)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error": err.Error(),
 				})
 				return
 			}
-			c.JSON(http.StatusOK, diets)
+			c.JSON(http.StatusOK, meals)
 		})
 		diets.POST("/meals", func(c *gin.Context) {
 			handlers.RecordMeal(c)
@@ -36,7 +40,16 @@ func Init() *gin.Engine {
 	orders := router.Group("/orders")
 	{
 		orders.GET("/healthy/:timeslot/:periods", func(c *gin.Context) {
-			diets, err := handlers.GetDiets(c)
+			timeslots := c.Param("timeslot")
+			periods := c.Param("periods")
+			var meals []string
+
+			meals, err := cache.GetUtility(timeslots, periods)
+			if err == nil {
+				c.JSON(http.StatusOK, meals)
+				return
+			}
+			diets, err := handlers.GetDiets(timeslots, periods)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error": err.Error(),
@@ -44,19 +57,30 @@ func Init() *gin.Engine {
 				return
 			}
 
-			meals, err := handlers.Recommendation(diets)
+			meals, err = handlers.Recommendation(diets)
+
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error": err.Error(),
 				})
 				return
 			}
+			err = cache.StoreUtility(meals, timeslots, periods, 20*time.Second)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
+
 			c.JSON(http.StatusOK, meals)
 		})
 		// TODO: not yet started
 		orders.GET("/enjoyable/:timeslot/:periods", func(c *gin.Context) {
 			// get the recommendation for the given timeslot
-			recommendation, err := handlers.GetDiets(c)
+			timeslots := c.Param("timeslot")
+			periods := c.Param("periods")
+			recommendation, err := handlers.GetDiets(timeslots, periods)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error": err.Error(),
@@ -75,7 +99,9 @@ func Init() *gin.Engine {
 			var longlatude []maps.LatLng
 
 			location := c.Param("location")
-			diets, err := handlers.GetDiets(c)
+			timeslots := c.Param("timeslot")
+			periods := c.Param("periods")
+			diets, err := handlers.GetDiets(timeslots, periods)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error": err.Error(),
@@ -133,4 +159,8 @@ func Init() *gin.Engine {
 	// }
 
 	return router
+}
+
+func utility() {
+
 }

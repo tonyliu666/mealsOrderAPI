@@ -56,6 +56,10 @@ func extractMealNames(resp *genai.GenerateContentResponse) []string {
 			}
 		}
 	}
+	// delete the semicolon in each meal 
+	for i := range meals {
+		meals[i] = meals[i][:len(meals[i])-1]
+	}
 	return meals
 }
 

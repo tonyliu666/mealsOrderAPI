@@ -54,5 +54,6 @@ func Recommendation(diet []database.Diets) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	
 	return meals, nil
 }

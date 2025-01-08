@@ -25,9 +25,9 @@ func Init() error {
 	log.Printf("Connected to Redis: %s\n", pong)
 	return nil
 }
-func Save(key string, value string) error {
+func Save(key string, value string, expiration time.Duration) error {
 	ctx := context.Background()
-	err := rdb.Set(ctx, key, value, 10*time.Minute).Err()
+	err := rdb.Set(ctx, key, value, expiration).Err()
 	if err != nil {
 		return err
 	}

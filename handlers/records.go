@@ -85,17 +85,16 @@ func RecordMeal(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "meal recorded successfully"})
 }
-func GetDiets(c *gin.Context) ([]database.Diets, error) {
+func GetDiets(timeslots string, periods string) ([]database.Diets, error) {
 	// timeslots: morning, afternoon, evening
 	// periods: how long the meal will last
 	var diets []database.Diets
-	timeslots := c.Param("timeslot")
-	periods := c.Param("periods")
+	
 	diets, err := database.QueryDates(timeslots, periods)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return nil, err
 	}
+
 	return diets, nil
 
 }
