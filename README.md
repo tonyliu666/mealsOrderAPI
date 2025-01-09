@@ -62,3 +62,27 @@ This API provides functionalities for managing and recommending food based on us
 
     * **Description:**
         Authenticates the user and returns a JWT token for subsequent API requests.
+
+
+Usage: 
+
+
+* create .env file: 
+
+like the field defined in the example.env file: 
+
+PORT: (default 8080)
+APPID: you should apply this id from this website first: https://developer.edamam.com/edamam-nutrition-api-demo  
+
+APPKeys: the same as above
+
+GEMINI_API_KEY: you can follow this tutorial: https://ai.google.dev/gemini-api/docs/api-key
+
+GOOGLE_MAPS_API_KEY: Here is the tutorial for you to create this key: https://developers.google.com/maps/documentation/javascript/get-api-key 
+
+DBuser,DBpassword, DBport, DBname, DBmode: you can arbitrary specify them 
+
+Then Run it:
+
+> go run main.go 
+
