@@ -1,40 +1,64 @@
-### this is a food recommendation api
+## Food Recommendation API
 
-#### endpoints introduction: 
+This API provides functionalities for managing and recommending food based on user dietary habits.
 
-* POST /diets/meals:
-> parameter: 
-eg: { 
-    "food_name": "2 butter cake",
-    "where_eaten": "Paris",
-    "date_eaten": "2024-12-29",
-    "time_eaten": "21-04-19",
-    "periods": "1hr"
-}
+**Endpoints:**
 
-record what did you eat in the certain moment in one day and also the nutritions inside your food(eg: Carbonhydrate, Fat, Protein, Carolie)
+* **POST /diets/meals**
 
-* GET /orders/healthy/{evening}(enter morning,afternoon,evening)/{7(all the dinner(breakfast,lunch) you have eaten within the 7 days)}
+    * **Parameters:**
+        * `food_name`: Name of the food.
+        * `where_eaten`: Location where the food was eaten.
+        * `date_eaten`: Date when the food was eaten (YYYY-MM-DD format).
+        * `time_eaten`: Time when the food was eaten (HH-MM-SS format).
+        * `periods`: Duration of the meal.
+        * `nutritions`: Nutritional information (e.g., Carbohydrate, Fat, Protein, Calories).
 
-recommend you some healthy food based on what the meals you ate within n days. 
+    * **Description:**
+        Records a meal with its details and nutritional information.
 
-* GET /diets/{evening}/{7}
+* **GET /orders/healthy/{evening}/{7}`**
 
-collect all the dinner you ate within 7 days. 
+    * **Parameters:**
+        * `{evening}`: Meal time (e.g., "morning", "afternoon", "evening").
+        * `{7}`: Number of days to consider (e.g., "7" for the last 7 days).
 
-* GET /shop/healthy/{NewYork TimeSquare}/{evening}/{7}
+    * **Description:**
+        Recommends healthy food options based on the meals eaten within the specified number of days.
 
-collect all the shop selling healthy food nearby the place you provide(here is the NewYork TimeSquare). According to what you eat within 7 past days, recommend the healthy dinner(here is the dinner you can change to breakfast or lunch) for you.  
+* **GET /diets/{evening}/{7}`**
 
-* POST /public/register: 
+    * **Parameters:**
+        * `{evening}`: Meal time (e.g., "morning", "afternoon", "evening").
+        * `{7}`: Number of days to consider (e.g., "7" for the last 7 days).
 
-provide the user name and password to let you be authenticated to use this system:
+    * **Description:**
+        Retrieves all meals eaten within the specified number of days for the given meal time.
 
-eg: { 
-    "username": "wang",
-    "password": "123456"
-}
+* **GET /shop/healthy/{NewYork TimeSquare}/{evening}/{7}`**
 
-* POST /public/login: 
+    * **Parameters:**
+        * `{NewYork TimeSquare}`: Location where to find healthy food options.
+        * `{evening}`: Meal time (e.g., "morning", "afternoon", "evening").
+        * `{7}`: Number of days to consider (e.g., "7" for the last 7 days).
 
-provide the user and password to this server and it will send the jwt token back to the client. Then client can utilize it as a authentication key in header and send the request again to server, so the server can verify it in a short period of time instead of checking the username and password in database. 
+    * **Description:**
+        Finds shops selling healthy food near the specified location and recommends healthy options for the given meal time based on the user's eating habits within the specified number of days.
+
+* **POST /public/register**
+
+    * **Parameters:**
+        * `username`: User's username.
+        * `password`: User's password.
+
+    * **Description:**
+        Registers a new user with the provided username and password.
+
+* **POST /public/login**
+
+    * **Parameters:**
+        * `username`: User's username.
+        * `password`: User's password.
+
+    * **Description:**
+        Authenticates the user and returns a JWT token for subsequent API requests.
