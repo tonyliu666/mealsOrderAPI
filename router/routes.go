@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 	"weather/handlers"
+	"weather/middleware"
 	"weather/models/cache"
 	"weather/models/gateway"
 
@@ -16,7 +17,6 @@ func Init() *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
-
 	diets := router.Group("/diets")
 	{
 		diets.GET("/:timeslot/:periods", func(c *gin.Context) {
@@ -32,11 +32,9 @@ func Init() *gin.Engine {
 			}
 			c.JSON(http.StatusOK, meals)
 		})
-		diets.POST("/meals", func(c *gin.Context) {
-			handlers.RecordMeal(c)
-		})
 
 	}
+
 	orders := router.Group("/orders")
 	{
 		orders.GET("/healthy/:timeslot/:periods", func(c *gin.Context) {
@@ -152,15 +150,14 @@ func Init() *gin.Engine {
 	}
 
 	// // Protected routes (require authentication)
-	// protectedRoutes := router.Group("/protected")
-	// protectedRoutes.Use(middleware.AuthenticationMiddleware())
-	// {
-	//     // Protected routes here
-	// }
+	protectedRoutes := router.Group("/protected")
+	protectedRoutes.Use(middleware.AuthenticationMiddleware())
+	{
+		protectedRoutes.POST("/meals", func(c *gin.Context) {
+			handlers.RecordMeal(c)
+		})
+
+	}
 
 	return router
-}
-
-func utility() {
-
 }

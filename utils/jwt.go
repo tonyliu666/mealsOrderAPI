@@ -2,7 +2,9 @@ package utils
 
 import (
 	"fmt"
+	"log"
 	"time"
+	"weather/models/cache"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -21,6 +23,13 @@ func GenerateToken(userID uint) (string, error) {
 
 // VerifyToken verifies a token JWT validate
 func VerifyToken(tokenString string) (jwt.MapClaims, error) {
+	// first check the tokenstring is in the cache
+	_, err := cache.Get(tokenString)
+	if err != nil {
+		log.Println("token not found in cache")
+		return nil, err
+	}
+
 	// Parse the token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Check the signing method

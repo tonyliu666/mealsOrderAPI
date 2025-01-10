@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"math/rand/v2"
 	"net/http"
 	"time"
@@ -9,7 +10,6 @@ import (
 	"weather/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 // Function for logging in
@@ -32,7 +32,6 @@ func Login(c *gin.Context) {
 
 	// check the user name exists in redis cache
 	err = realuser.Read()
-
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
@@ -41,15 +40,21 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
-	// return a session id(unsigned int) to the user
-	NewSessionID := uuid.New().String()
+	// return a session id(unsigned int) to the user and generate jwt token
+
+	jwt, err := utils.GenerateToken(realuser.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error generating token"})
+		return
+	}
+	log.Println("jwt", jwt)
 	// save the session id to the redis cache
-	err = cache.Save(NewSessionID, realuser.Username, 10*time.Minute)
+	err = cache.Save(jwt, realuser.Username, 10*time.Minute)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error saving session"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully", "sessionID": NewSessionID})
+	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully", "token": jwt})
 
 }
 
@@ -60,6 +65,14 @@ func Register(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data"})
+		return
+	}
+	// check the user name exists in database
+	dbuser := database.Client{Username: user.Username}
+	err := dbuser.Read()
+	if err == nil {
+		// return 409 if the user name exists
+		c.JSON(http.StatusConflict, gin.H{"error": "User already exists"})
 		return
 	}
 
