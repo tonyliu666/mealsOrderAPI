@@ -17,7 +17,7 @@ func shopsRecommendation(loction []maps.LatLng, meals []string) ([]Shop, error) 
 	var shops []Shop
 	latlng := loction[0]
 	result, err := gateway.NearbySearch(latlng, meals)
-
+	
 	if err != nil {
 		return nil, err
 	}

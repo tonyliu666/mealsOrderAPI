@@ -61,6 +61,7 @@ func NearbySearch(location maps.LatLng, keyword []string) ([]map[string]interfac
 				errChan <- err
 				return
 			}
+
 			information := extractInfo(rsp)
 			resp = append(resp, information...)
 			wg.Done()
@@ -69,10 +70,10 @@ func NearbySearch(location maps.LatLng, keyword []string) ([]map[string]interfac
 	wg.Wait()
 	// check if there is any error
 	select {
-		case err := <-errChan:
-			return nil, err
-		default:
-			return resp, nil
+	case err := <-errChan:
+		return nil, err
+	default:
+		return resp, nil
 	}
 }
 
